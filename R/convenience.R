@@ -16,7 +16,7 @@ showData <- function()
   }
 }
 
-flushShinier <- function()
+flushShinyApp <- function()
 {
   foo <- readline("Are you sure you want to flush (Y/N)?")
   if (foo == "Y") {
