@@ -173,3 +173,56 @@ plotOutputAdd <- function(outputId, width = "100%", height = "400px", plotcode =
   invisible(list(ui=ui, se=se))
 }
 
+textOutputAdd <- function(outputId, textcode = NULL)
+{
+  if (is.null(.GlobalEnv$.shinier)) {
+    stop("No skeleton exists; see help(\"shinySkeleton\")")
+  }
+  ui <- .GlobalEnv$.shinier$ui
+  se <- .GlobalEnv$.shinier$se
+  
+  if (is.null(textcode)) stop("You must specify text code")
+  foo <- paste("      textOutput(", deparse(outputId), ")", sep="")
+  
+  startline <- grep("START mainPanel", ui)
+  endline <- grep("END mainPanel", ui)
+  if (startline+1 < endline) foo <- c(",", foo)
+  ui <- c(ui[1:(endline-1)], foo, ui[endline:length(ui)])
+  
+  foo <- c(paste("  output$", outputId, " <- renderText({", sep=""),
+           paste("    ", textcode, sep=""),
+           "  })")
+  startline <- grep("shinyServer content", se)
+  se <- c(se[1:startline], foo, se[-c(1:startline)])
+  
+  .GlobalEnv$.shinier$ui <- ui
+  .GlobalEnv$.shinier$se <- se
+  invisible(list(ui=ui, se=se))
+}
+
+printOutputAdd <- function(outputId, printcode = NULL)
+{
+  if (is.null(.GlobalEnv$.shinier)) {
+    stop("No skeleton exists; see help(\"shinySkeleton\")")
+  }
+  ui <- .GlobalEnv$.shinier$ui
+  se <- .GlobalEnv$.shinier$se
+  
+  if (is.null(printcode)) stop("You must specify print code")
+  foo <- paste("      verbatimTextOutput(", deparse(outputId), ")", sep="")
+  
+  startline <- grep("START mainPanel", ui)
+  endline <- grep("END mainPanel", ui)
+  if (startline+1 < endline) foo <- c(",", foo)
+  ui <- c(ui[1:(endline-1)], foo, ui[endline:length(ui)])
+  
+  foo <- c(paste("  output$", outputId, " <- renderPrint({", sep=""),
+           paste("    ", printcode, sep=""),
+           "  })")
+  startline <- grep("shinyServer content", se)
+  se <- c(se[1:startline], foo, se[-c(1:startline)])
+  
+  .GlobalEnv$.shinier$ui <- ui
+  .GlobalEnv$.shinier$se <- se
+  invisible(list(ui=ui, se=se))
+}
