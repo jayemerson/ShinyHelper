@@ -30,7 +30,8 @@ Yale/Columbia [Environmental Performance Index](http://epi.yale.edu/).
 Try this in R:
 
 ---
-
+> require(devtools)  
+> install_github('ShinyHelper', 'jayemerson')  
 > library(ShinyHelper)  
 > demo("EPI_2012")  
 > runApp("EPI_2012")     # Interactive, not over the web
