@@ -1,0 +1,228 @@
+---
+title: "Just One Guy's Introduction to Shiny"
+author: "Jay Emerson"
+date: "Jaks, Chicago, November 13, 2014"
+output: ioslides_presentation
+runtime: shiny
+---
+
+
+## This Presentation
+
+- Official resources
+- Toy example (stand-alone)
+- Toy example (via `ShinyHelper`) embedded in this presentation (method 1)
+- Slightly expanded example embedded in this presentation (method 2)
+
+
+## Where To Go (official resources)
+
+Googling can reveal some older tutorials and documentation.
+None of this is my work;  my stuff is of secondary importance
+in the grand scheme of things and will be referenced later, separately.
+The newest and greatest official resources, as far as I know:
+
+- Tutorial, documentation, examples: http://shiny.rstudio.com
+- Source code (and see `inst/examples/` for
+  some good example): https://github.com/rstudio/shiny
+- Serious deployment (Alpha version): https://www.shinyapps.io
+
+
+## 01_hello/ folder contents
+
+This example is included with the `shiny` package in the `inst/examples`
+directory along with other goodies.  We'll look at it, then we'll run it.
+
+    Jays-MacBook-Pro:Shiny_master jay$ ls 01_hello/
+    
+    server.R  ui.R
+
+The following code is mildly edited to display well in the presentation.
+
+
+## 01_hello/ui.R
+```{r eval=FALSE}
+library(shiny)
+
+shinyUI(fluidPage(
+  titlePanel("Hello Shiny!"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("bins", "Number of bins:",
+                  min = 1, max = 50, value = 30)
+    ),
+    mainPanel(
+      plotOutput("distPlot")
+    )
+  )
+))
+```
+    
+    
+## 01_hello/server.R
+```{r eval=FALSE}
+library(shiny)
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+  
+  output$distPlot <- renderPlot({
+    x    <- faithful[, 2]  # Old Faithful Geyser data
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white')
+  })
+  
+})
+```
+
+
+## Running 01_hello in browser
+    Jays-MacBook-Pro:Shiny_master jay$ ls
+    
+    01_hello  Intro2Shiny.Rmd
+    
+    Jays-MacBook-Pro:Shiny_master jay$ ls 01_hello/
+    
+    server.R  ui.R
+    
+    Jays-MacBook-Pro:Shiny_master jay$ R
+
+      < snip -- I'm still apparently using R 3.1.1 >
+
+    > library(shiny)
+    > runApp("01_hello/")
+
+    Listening on http://127.0.0.1:7934
+    ^C
+    >  
+
+```{r echo=FALSE}
+system("/bin/rm -r SH_hello")
+```
+
+## ShinyHelper:
+
+__Author simple Shiny apps with wrapper functions provided
+by `ShinyHelper`.__
+
+If you just want to build an occasional
+Shiny app, you probably don't need this.  But if it becomes
+a regular thing, `ShinyHelper` lets you write an app using
+R code (rather than writing the app itself).  Contributions
+would be welcome (providing new wrappers for more advanced
+Shiny features).
+
+https://github.com/jayemerson/ShinyHelper
+
+Buyer beware, no warranties, etc...
+
+
+## 01_hello via ShinyHelper
+
+```{r eval=FALSE}
+require(devtools)
+install_github('ShinyHelper', 'jayemerson')
+```
+```{r}
+
+library(ShinyHelper)
+
+shinySkeleton("SH_hello")
+headerPanelAdd("01_hello via ShinyHelper")
+sliderInputAdd("bins", "Number of bins:",
+               min = 1, max = 50, value = 30)
+plotOutputAdd("distplot", plotcode =
+'
+  x    <- faithful[, 2]  # Old Faithful Geyser data
+  bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  hist(x, breaks = bins, col = "darkgray", border = "white")
+')
+createApp("SH_hello", overwrite=TRUE)
+# runApp("SH_hello") # We'll do something else...
+```
+
+
+## Embedding SH_hello in this presentation
+
+You can simply point your presentation to the folder
+containing your Shiny app.  In this example,
+the following code goes into a simple code chunk
+on the next slide that looks like this (but with `echo=FALSE`
+as a code chunk option):
+
+```{r eval=FALSE}
+shinyAppDir(
+  "SH_hello", options=list(width="100%", height=700)
+)
+```    
+
+
+## SH_hello
+
+```{r, echo = FALSE}
+shinyAppDir(
+  "SH_hello", options=list(width="100%", height=700)
+)
+```
+
+
+## Embedding the Shiny app code inline
+
+The example on the next pages comes from the default
+page template for a Shiny R Markdown presentation.
+See also:
+
+http://rmarkdown.rstudio.com/authoring_shiny.html
+
+Note that this approach doesn't use (require?) the "packaging"
+of `inputPanel()` and `renderPlot()` inside formal
+`shinyServer()` and `shinyUI` infrastructure.  There
+is no formal directory containing the app, as with previous
+examples.
+
+
+## Embedded code for interactive plot
+
+```{r, eval=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE,
+       breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)",
+       main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+## Slide with Interactive Plot
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE,
+       breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)",
+       main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
