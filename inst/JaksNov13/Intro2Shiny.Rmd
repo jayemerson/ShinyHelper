@@ -98,7 +98,7 @@ shinyServer(function(input, output) {
     >  
 
 ```{r echo=FALSE}
-system("/bin/rm -r SH_hello")
+unlink("SH_hello/", recursive=TRUE)
 ```
 
 ## ShinyHelper:
